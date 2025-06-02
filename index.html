@@ -101,26 +101,44 @@
       map.add(graphicsLayer);
 
       //defining the geometry of the point
-      const point = { //Create a point  
+      const point = {   
         type: "point",  
         longitude: 16.44023,    //Kiva Bar
         latitude: 43.17278
       };
       
       //define marker style
-      const simpleMarkerSymbol = {  
-        type: "simple-marker",  
-        color: [0, 0, 139],  // Color of blues rock
-        outline: {  
-          color: [255, 255, 255], // White  
+      const starMarkerSymbol = {
+        type: "simple-marker",    // autocasts as new SimpleMarkerSymbol()
+        style: "path",            // switch to custom SVG geometry 
+        // This SVG path draws a 5-point star around the origin (0,0):
+        path: "M0,-10 L2.94,-3.09 L9.51,-3.09 "
+            + "L4.29,1.18 L6.99,8.09 L0,4 "
+            + "L-6.99,8.09 L-4.29,1.18 "
+            + "L-9.51,-3.09 L-2.94,-3.09 Z",
+        color: [255, 215, 0, 0.9], // gold fill
+        outline: {
+          color: [255, 255, 255],  // white outline
           width: 1
-        }  
+        },
+        size: 24                 // size in points
       };
+
+      const popupTemplate = {
+        title: "{Name}",
+        content: "{Description}"
+    }
+    const attributes = {
+        Name: "Kiva Bar",
+        Description: "The Best Bar in Hvar!"
+    }
 
       //create point
       const pointGraphic = new Graphic({  
         geometry: point,  
-        symbol: simpleMarkerSymbol  
+        symbol: starMarkerSymbol, 
+        attributes: attributes,
+        popupTemplate: popupTemplate
       });
 
       //add the point to the graphics layer
