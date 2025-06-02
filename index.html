@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://js.arcgis.com/4.25/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.25/"></script>
 
-  <!-- Full Screen Map modules-->
   <script>
     require([
       "esri/config",
@@ -21,8 +20,8 @@
       "esri/widgets/Expand",
       "esri/widgets/Locate",
       "esri/widgets/Search",
-      "esri/Graphic",  
-      "esri/layers/GraphicsLayer"   
+      "esri/Graphic",
+      "esri/layers/GraphicsLayer"
     ], function(
       esriConfig,
       Map,
@@ -46,28 +45,15 @@
       // create the MapView
       const view = new MapView({
         map: map,
-        center: [16.4433, 43.17242], //Split, Croatia.
+        center: [16.4433, 43.17242], // Split, Croatia
         zoom: 15,
         container: "viewDiv"
       });
-      
-      // ---------------------------------------------> define custom basemaps collection
-      // const customSource = [
-      //   Basemap.fromId("topo-vector"),
-      //   Basemap.fromId("hybrid"),
-      //   Basemap.fromId("streets-vector"),
-      //   Basemap.fromId("dark-gray-vector")
-      // ];
-      // ---------------------------------------------> 
-
 
       // BasemapGallery widget
       const basemapGallery = new BasemapGallery({
-        view: view,
-        // source: customSource ------------------------> References custom source 
+        view: view
       });
-
-      // Expand wrapper for BasemapGallery
       const bgExpand = new Expand({
         view: view,
         content: basemapGallery,
@@ -95,57 +81,56 @@
         includeDefaultSources: true
       });
       view.ui.add(searchWidget, "top-right");
-      
-      //adding constructor for the graphicsLayer
-      const graphicsLayer = new GraphicsLayer();  
+
+      // add a GraphicsLayer
+      const graphicsLayer = new GraphicsLayer();
       map.add(graphicsLayer);
 
-      //defining the geometry of the point
-      const point = {   
-        type: "point",  
-        longitude: 16.44023,    //Kiva Bar
+      // geometry of the point
+      const point = {
+        type: "point",
+        longitude: 16.44023,  // Kiva Bar
         latitude: 43.17278
       };
-      
-      //define marker style
-      const starMarkerSymbol = {
+
+      // define a cross‐shaped SimpleMarkerSymbol
+      const crossMarkerSymbol = {
         type: "simple-marker",    // autocasts as new SimpleMarkerSymbol()
-        style: "path",            // switch to custom SVG geometry 
-        // This SVG path draws a 5-point star around the origin (0,0):
-        path: "M0,-10 L2.94,-3.09 L9.51,-3.09 "
-            + "L4.29,1.18 L6.99,8.09 L0,4 "
-            + "L-6.99,8.09 L-4.29,1.18 "
-            + "L-9.51,-3.09 L-2.94,-3.09 Z",
-        color: [255, 215, 0, 0.9], // gold fill
+        style: "cross",           
+        color: [255, 0, 0],
+        size: 12,                
         outline: {
-          color: [255, 255, 255],  // white outline
-          width: 1
-        },
-        size: 24                 // size in points
+          color: [255, 0, 0],  
+          width: 3
+        }
+      };
+
+      // define attributes and popupTemplate
+      const attributes = {
+        Name: "Kiva Bar",
+        Description: "The Best Bar in Hvar!"
       };
 
       const popupTemplate = {
         title: "{Name}",
         content: "{Description}"
-    }
-    const attributes = {
-        Name: "Kiva Bar",
-        Description: "The Best Bar in Hvar!"
-    }
+      };
 
-      //create point
-      const pointGraphic = new Graphic({  
-        geometry: point,  
-        symbol: starMarkerSymbol, 
-        attributes: attributes,
-        popupTemplate: popupTemplate
+      // create the Graphic, including attributes and popupTemplate
+      const pointGraphic = new Graphic({
+        geometry: point,
+        symbol: crossMarkerSymbol,
+        attributes: attributes,         // ← attach attributes here
+        popupTemplate: popupTemplate    // ← attach the popup template here
       });
 
-      //add the point to the graphics layer
+      // add the graphic to the layer
       graphicsLayer.add(pointGraphic);
-    });
 
+      // Now, clicking the red cross will open a popup that shows the Name/Description
+    });
   </script>
+
   <!-- css to make a full screen map -->
   <style>
     html,
@@ -157,7 +142,6 @@
       width: 100%;
     }
   </style>
-
 </head>
 <body>
   <div id="viewDiv"></div>
