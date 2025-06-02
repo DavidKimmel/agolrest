@@ -20,7 +20,9 @@
       "esri/widgets/BasemapGallery",
       "esri/widgets/Expand",
       "esri/widgets/Locate",
-      "esri/widgets/Search"
+      "esri/widgets/Search",
+      "esri/Graphic",  
+      "esri/layers/GraphicsLayer"   
     ], function(
       esriConfig,
       Map,
@@ -29,14 +31,16 @@
       BasemapGallery,
       Expand,
       Locate,
-      Search
+      Search,
+      Graphic,
+      GraphicsLayer
     ) {
 
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEwEJiPsJAv6XK5APCcuFpZEmTCdTdSU9XMQXYBgfL9c5UnZrY4R2UdHgVrW8LfqDFKnjefPQr9XO0pMlE2S9osFC4vlxQEcDC2L-rbRhvnh3cGFmfknrnTY3XSIHKqUu1aHDnbMm61c0aME06Eg9u_NwfzhPyWlPsZlxkyOWLAtootixnskdcZY0pddnIjDLJ19HPMO7YoJRFfo-wFMnrXD59hI_LVwr_BLfWo0dbk7AT1_nGwi5c7J";
 
       // create the Map
       const map = new Map({
-        basemap: "topo-vector"
+        basemap: "streets-vector"
       });
 
       // create the MapView
@@ -91,10 +95,39 @@
         includeDefaultSources: true
       });
       view.ui.add(searchWidget, "top-right");
+      
+      //adding constructor for the graphicsLayer
+      const graphicsLayer = new GraphicsLayer();  
+      map.add(graphicsLayer);
 
+      //defining the geometry of the point
+      const point = { //Create a point  
+        type: "point",  
+        longitude: 16.44023,    //Kiva Bar
+        latitude: 43.17278
+      };
+      
+      //define marker style
+      const simpleMarkerSymbol = {  
+        type: "simple-marker",  
+        color: [0, 0, 139],  // Color of blues rock
+        outline: {  
+          color: [255, 255, 255], // White  
+          width: 1
+        }  
+      };
+
+      //create point
+      const pointGraphic = new Graphic({  
+        geometry: point,  
+        symbol: simpleMarkerSymbol  
+      });
+
+      //add the point to the graphics layer
+      graphicsLayer.add(pointGraphic);
     });
-  </script>
 
+  </script>
   <!-- css to make a full screen map -->
   <style>
     html,
