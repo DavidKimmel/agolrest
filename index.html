@@ -45,8 +45,8 @@
       // create the MapView
       const view = new MapView({
         map: map,
-        center: [16.4433, 43.17242], // Split, Croatia
-        zoom: 15,
+        center: [-77.0369, 38.9072], // Washington, D.C.
+        zoom: 10,
         container: "viewDiv"
       });
 
@@ -89,46 +89,57 @@
       // geometry of the point
       const point = {
         type: "point",
-        longitude: 16.44023,  // Kiva Bar
-        latitude: 43.17278
+        longitude: -77.036560,  // White House
+        latitude: 38.897957
       };
 
-      // define a cross‐shaped SimpleMarkerSymbol
-      const crossMarkerSymbol = {
+      // define a yellow star SimpleMarkerSymbol
+      const starSymbol = {
         type: "simple-marker",    // autocasts as new SimpleMarkerSymbol()
-        style: "cross",           
-        color: [255, 0, 0],
-        size: 12,                
+        style: "star",
+        color: [255, 255, 0],     // yellow fill
+        size: 12,
         outline: {
-          color: [255, 0, 0],  
-          width: 3
+          color: [0, 0, 0],       // black outline
+          width: 2
         }
       };
 
-      // define attributes and popupTemplate
+      // define attributes including Name, Description, and URL
       const attributes = {
-        Name: "Kiva Bar",
-        Description: "The Best Bar in Hvar!"
+        Name: "The White House",
+        Description: "The White House is both the home of the President of the United States and his family, and a living museum of American history.",
+        URL: "https://www.whitehouse.gov/"
       };
 
+      // popup template: include Description, link, and image via full HTTP URL
       const popupTemplate = {
         title: "{Name}",
-        content: "{Description}"
+        content: `
+          <p>{Description}</p>
+          <p>
+            <a href="{URL}" target="_blank">
+              Visit the official White House website
+            </a>
+          </p>
+          <img src="http://127.0.0.1:5500/whitehouse.jpg"
+               alt="White House"
+               style="width:200px; margin-top:8px;" />
+        `
       };
 
-      // create the Graphic, including attributes and popupTemplate
+      // create the Graphic, including attributes and the updated popupTemplate
       const pointGraphic = new Graphic({
         geometry: point,
-        symbol: crossMarkerSymbol,
-        attributes: attributes,         // ← attach attributes here
-        popupTemplate: popupTemplate    // ← attach the popup template here
+        symbol: starSymbol,          // yellow star symbol
+        attributes: attributes,
+        popupTemplate: popupTemplate
       });
 
       // add the graphic to the layer
       graphicsLayer.add(pointGraphic);
-
-      // Now, clicking the red cross will open a popup that shows the Name/Description
     });
+    
   </script>
 
   <!-- css to make a full screen map -->
