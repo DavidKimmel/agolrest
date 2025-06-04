@@ -39,7 +39,7 @@
 
       // 1. Create the Map
       const map = new Map({
-        basemap: "darkgre-"
+        basemap: "dark-gray"
       });
 
       // 2. Create the MapView, using an extent that covers both DC and Baltimore
@@ -162,7 +162,7 @@
       });
       graphicsLayer.add(lineGraphic);
 
-      // 6g. Add the Baltimore 10×10 mile polygon
+      // 6g. Add the Baltimore  polygon
       const baltimorePolygon = {
         type: "polygon",
         rings: [
@@ -187,31 +187,6 @@
       });
       graphicsLayer.add(baltimoreGraphic);
 
-      // 6h. Add the Washington, D.C. polygon (unchanged)
-      const dcPolygon = {
-        type: "polygon",
-        rings: [
-          [-77.1198, 38.9955],  // NW corner of DC
-          [-76.9094, 38.9955],  // NE corner of DC
-          [-76.9094, 38.7916],  // SE corner of DC
-          [-77.1198, 38.7916],  // SW corner of DC
-          [-77.1198, 38.9955]   // back to NW
-        ]
-      };
-      const dcFill = {
-        type: "simple-fill",
-        color: [0, 128, 0, 0.2],  // semi-transparent green
-        outline: {
-          color: [0, 128, 0],     // solid green outline
-          width: 2
-        }
-      };
-      const dcGraphic = new Graphic({
-        geometry: dcPolygon,
-        symbol: dcFill
-      });
-      graphicsLayer.add(dcGraphic);
-
       // 7. Add the military bases FeatureLayer with popups
       const milBaseLayer = new FeatureLayer({
         url: "https://services.arcgis.com/hRUr1F8lE8Jq2uJo/arcgis/rest/services/milbases/FeatureServer",
@@ -222,7 +197,7 @@
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: [0, 0, 255, 0.7],  // semi-transparent blue
+            color: [0, 0, 255, 1],  // semi-transparent blue
             size: 8,
             outline: {
               color: "white",
@@ -241,26 +216,44 @@
       map.add(milBaseLayer);
 
       // 8. Add the US Airports layer with custom icon
+      //const to make the airport labels
+      const airportLabels = {
+        symbol: {
+          type: "text",
+          color: "#FFFFFF",
+          haloColor: "#5E8D74",
+          haloSize: "2px",
+          font: {
+            size: "12px",
+            family: "Noto Sans",
+            style: "italic",
+            weight: "normal"
+          }
+        },
+        labelPlacement: "above-center",
+        labelExpressionInfo: {
+          expression: "$feature.Fac_Name"
+        }
+      };
+
+      const airportRenderer = {
+        "type": "simple",
+        "symbol": {
+          "type": "picture-marker",
+          "url": "https://raw.githubusercontent.com/DavidKimmel/agol/main/airport.png",
+          "width": "18px",
+          "height": "18px"
+        }
+      }
       const airportsLayer = new FeatureLayer({
         url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Kimmel_2025/FeatureServer",
         outFields: ["AIRPORT_NAME", "IATA_CODE", "STATE"],
-        renderer: {
-          type: "simple",
-          symbol: {
-            type: "picture-marker",
-            url: "https://raw.githubusercontent.com/DavidKimmel/agol/main/airport.png",
-            width: "24px",
-            height: "24px"
-          }
-        },
-        popupTemplate: {
-          title: "{AIRPORT_NAME}",
-          content: `
-            <strong>IATA Code:</strong> {IATA_CODE} <br>
-            <strong>State:</strong> {STATE}
-          `
-        }
+        renderer: airportRenderer,
+        definitionExpression: "Fac_Type = 'AIRPORT'", //adding sql to filter for airports
+        labelingInfo: [airportLabels] //adding the labels
+
       });
+
       map.add(airportsLayer);
 
     });
