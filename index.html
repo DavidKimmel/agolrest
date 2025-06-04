@@ -162,7 +162,7 @@
       });
       graphicsLayer.add(lineGraphic);
 
-      // 6g. Add the Baltimore  polygon
+      // 6g. Add the Baltimore polygon
       const baltimorePolygon = {
         type: "polygon",
         rings: [
@@ -197,7 +197,7 @@
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: [0, 0, 255, 1],  // semi-transparent blue
+            color: [0, 0, 255, 1],  // opaque blue
             size: 8,
             outline: {
               color: "white",
@@ -215,8 +215,42 @@
       });
       map.add(milBaseLayer);
 
-      // 8. Add the US Airports layer with custom icon
-      //const to make the airport labels
+      // 8. Add the US Airports layer with both Airport and Heliport symbols
+      const airportRenderer = {
+        type: "unique-value",  
+        field: "Fac_Type",
+        defaultSymbol: {
+          type: "simple-marker",
+          style: "circle",
+          color: [200, 200, 200, 0.5],
+          size: 6,
+          outline: {
+            color: "#888",
+            width: 0.5
+          }
+        },
+        uniqueValueInfos: [
+          {
+            value: "AIRPORT",
+            symbol: {
+              type: "picture-marker",
+              url: "https://raw.githubusercontent.com/DavidKimmel/agol/main/airport.png",
+              width: "18px",
+              height: "18px"
+            }
+          },
+          {
+            value: "HELIPORT",
+            symbol: {
+              type: "picture-marker",
+              url: "https://raw.githubusercontent.com/DavidKimmel/agol/main/helipad.png",
+              width: "18px",
+              height: "18px"
+            }
+          }
+        ]
+      };
+
       const airportLabels = {
         symbol: {
           type: "text",
@@ -236,24 +270,13 @@
         }
       };
 
-      const airportRenderer = {
-        "type": "simple",
-        "symbol": {
-          "type": "picture-marker",
-          "url": "https://raw.githubusercontent.com/DavidKimmel/agol/main/airport.png",
-          "width": "18px",
-          "height": "18px"
-        }
-      }
       const airportsLayer = new FeatureLayer({
         url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Kimmel_2025/FeatureServer",
-        outFields: ["AIRPORT_NAME", "IATA_CODE", "STATE"],
+        outFields: ["Fac_Name", "Fac_Type", "IATA_CODE", "STATE"],
         renderer: airportRenderer,
-        definitionExpression: "Fac_Type = 'AIRPORT'", //adding sql to filter for airports
-        labelingInfo: [airportLabels] //adding the labels
-
+        labelingInfo: [airportLabels],
+        definitionExpression: "Fac_Type = 'AIRPORT' OR Fac_Type = 'HELIPORT'"
       });
-
       map.add(airportsLayer);
 
     });
