@@ -15,7 +15,6 @@
       "esri/config",
       "esri/Map",
       "esri/views/MapView",
-      "esri/Basemap",
       "esri/widgets/BasemapGallery",
       "esri/widgets/Expand",
       "esri/widgets/Locate",
@@ -27,7 +26,6 @@
       esriConfig,
       Map,
       MapView,
-      Basemap,
       BasemapGallery,
       Expand,
       Locate,
@@ -39,25 +37,28 @@
 
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEwEJiPsJAv6XK5APCcuFpZEmTCdTdSU9XMQXYBgfL9c5UnZrY4R2UdHgVrW8LfqDFKnjefPQr9XO0pMlE2S9osFC4vlxQEcDC2L-rbRhvnh3cGFmfknrnTY3XSIHKqUu1aHDnbMm61c0aME06Eg9u_NwfzhPyWlPsZlxkyOWLAtootixnskdcZY0pddnIjDLJ19HPMO7YoJRFfo-wFMnrXD59hI_LVwr_BLfWo0dbk7AT1_nGwi5c7J";
 
-      // create the Map
+      // 1. Create the Map
       const map = new Map({
         basemap: "streets-vector"
       });
 
-      // create the MapView, initially centered on D.C.
+      // 2. Create the MapView, using an extent that covers both DC and Baltimore
       const view = new MapView({
         map: map,
-        center: [-77.0369, 38.9072], // Washington, D.C.
-        zoom: 10,
+        extent: {
+          xmin: -77.1198,
+          ymin:  38.7916,
+          xmax: -76.5189,
+          ymax:  39.3629,
+          spatialReference: { wkid: 4326 }
+        },
         container: "viewDiv"
       });
 
-      // BasemapGallery widget
-      const basemapGallery = new BasemapGallery({
-        view: view
-      });
+      // 3. BasemapGallery widget (in an Expand)
+      const basemapGallery = new BasemapGallery({ view });
       const bgExpand = new Expand({
-        view: view,
+        view,
         content: basemapGallery,
         expandIconClass: "esri-icon-basemap",
         expandTooltip: "Show basemap options",
@@ -65,9 +66,9 @@
       });
       view.ui.add(bgExpand, "top-right");
 
-      // Locate widget
+      // 4. Locate widget 
       const locateWidget = new Locate({
-        view: view,
+        view,
         useHeadingEnabled: false,
         goToOverride: (view, options) => {
           options.target.scale = 5000;
@@ -76,48 +77,46 @@
       });
       view.ui.add(locateWidget, "top-left");
 
-      // Search widget
+      // 5. Search widget
       const searchWidget = new Search({
-        view: view,
+        view,
         allPlaceholder: "Search address or place",
         includeDefaultSources: true
       });
       view.ui.add(searchWidget, "top-right");
 
-      // add a GraphicsLayer for the White House point
+      // 6. GraphicsLayer for custom graphics (White House, polyline, polygons)
       const graphicsLayer = new GraphicsLayer();
       map.add(graphicsLayer);
 
-      // geometry of the White House point
-      const point = {
+      // 6a. Geometry for White House point
+      const whPoint = {
         type: "point",
-        longitude: -77.036560,  // White House
+        longitude: -77.036560,
         latitude: 38.897957
       };
 
-      // define a star using 'path' style (SVG path commands)
-      const starSymbol = {
-        type: "simple-marker",    // autocasts as new SimpleMarkerSymbol()
-        style: "path",
-        // This path draws a symmetric 5-point star, centered at (0,0)
-        path: "M0,-10 L2,-2 L10,-2 L3,2 L5,10 L0,5 L-5,10 L-3,2 L-10,-2 L-2,-2 Z",
-        color: [255, 255, 0, 1],  // yellow fill (RGB + full opacity)
-        size: 20,                 // adjust size as needed (20 px high)
+      // 6b. Define a yellow square symbol for the White House
+      const squareSymbol = {
+        type: "simple-marker",
+        style: "square",
+        color: [255, 255, 0],  // yellow fill
+        size: 12,
         outline: {
-          color: [0, 0, 0, 1],    // black outline
-          width: 1
+          color: [0, 0, 0],    // black outline
+          width: 2
         }
       };
 
-      // define attributes including Name, Description, and URL
-      const attributes = {
+      // 6c. Attributes for White House graphic
+      const whAttributes = {
         Name: "The White House",
         Description: "The White House is both the home of the President of the United States and his family, and a living museum of American history.",
         URL: "https://www.whitehouse.gov/"
       };
 
-      // popup template: include Description, link, and image via full HTTP URL
-      const popupTemplate = {
+      // 6d. Popup template for White House
+      const whPopupTemplate = {
         title: "{Name}",
         content: `
           <p>{Description}</p>
@@ -132,43 +131,116 @@
         `
       };
 
-      // create the Graphic, including attributes and the updated popupTemplate
-      const pointGraphic = new Graphic({
-        geometry: point,
-        symbol: starSymbol,          // now a valid 'path' star
-        attributes: attributes,
-        popupTemplate: popupTemplate
+      // 6e. Create the White House Graphic
+      const whGraphic = new Graphic({
+        geometry: whPoint,
+        symbol: squareSymbol,
+        attributes: whAttributes,
+        popupTemplate: whPopupTemplate
       });
+      graphicsLayer.add(whGraphic);
 
-      // add the White House graphic to the layer
-      graphicsLayer.add(pointGraphic);
+      // 6f. Add a polyline roughly between DC and Baltimore
+      const lineCenterLon = -76.8244;
+      const lineLat = 39.0942;
+      const lineHalfDeltaLon = 0.28;
+      const polyline = {
+        type: "polyline",
+        paths: [
+          [lineCenterLon - lineHalfDeltaLon, lineLat],
+          [lineCenterLon + lineHalfDeltaLon, lineLat]
+        ]
+      };
+      const lineSymbol = {
+        type: "simple-line",
+        color: [255, 0, 0],   // red line
+        width: 3
+      };
+      const lineGraphic = new Graphic({
+        geometry: polyline,
+        symbol: lineSymbol
+      });
+      graphicsLayer.add(lineGraphic);
 
-      // add MLB stadiums FeatureLayer using the base FeatureServer URL + layerId: 0
-      const mlbStadiumsLayer = new FeatureLayer({
-        url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/Major_League_Baseball_Stadiums/FeatureServer",
+      // 6g. Add the Baltimore polygon
+      const baltimorePolygon = {
+        type: "polygon",
+        rings: [
+          [-76.7055, 39.3629],  // top-left
+          [-76.5189, 39.3629],  // top-right
+          [-76.5189, 39.2179],  // bottom-right
+          [-76.7055, 39.2179],  // bottom-left
+          [-76.7055, 39.3629]   // back to top-left
+        ]
+      };
+      const baltimoreFill = {
+        type: "simple-fill",
+        color: [0, 128, 0, 0.2],  // semi-transparent green
+        outline: {
+          color: [0, 128, 0],    // solid green outline
+          width: 2
+        }
+      };
+      const baltimoreGraphic = new Graphic({
+        geometry: baltimorePolygon,
+        symbol: baltimoreFill
+      });
+      graphicsLayer.add(baltimoreGraphic);
+
+      // 7. Add the military bases FeatureLayer with popups
+      const milBaseLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/hRUr1F8lE8Jq2uJo/arcgis/rest/services/milbases/FeatureServer",
         layerId: 0,
-        outFields: ["*"],
+        outFields: ["COMPONENT", "SITE_NAME", "STATE_TERR"],
         renderer: {
-          type: "simple", // show each stadium as a small red circle
+          type: "simple",
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "red",
-            size: 8,
+            color: [0, 0, 102, 1], 
+            size: 15,
             outline: {
               color: "white",
               width: 1
             }
           }
+        },
+        popupTemplate: {
+          title: "{SITE_NAME}",
+          content: `
+            <strong>Component:</strong> {COMPONENT} <br>
+            <strong>State/Territory:</strong> {STATE_TERR}
+          `
         }
       });
-      map.add(mlbStadiumsLayer);
-
-      // once that layer loads, zoom the view to its fullExtent so you see stadiums
-      mlbStadiumsLayer.when(() => {
-        view.goTo(mlbStadiumsLayer.fullExtent);
+      map.add(milBaseLayer);
+      
+      // 8. Add the US Airports layer
+      const airportsLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Kimmel_2025/FeatureServer",
+        outFields: ["AIRPORT_NAME", "IATA_CODE", "STATE"],
+        renderer: {
+          type: "simple",
+          symbol: {
+            type: "simple-marker",
+            style: "triangle",
+            color: [255, 165, 0], // orange
+            size: 8,
+            outline: {
+              color: [255, 255, 255],
+              width: 1
+            }
+          }
+        },
+        popupTemplate: {
+          title: "{AIRPORT_NAME}",
+          content: `
+            <strong>IATA Code:</strong> {IATA_CODE} <br>
+            <strong>State:</strong> {STATE}
+          `
+        }
       });
-
+      map.add(airportsLayer);
     });
   </script>
 
