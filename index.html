@@ -39,7 +39,7 @@
 
       // 1. Create the Map
       const map = new Map({
-        basemap: "streets-vector"
+        basemap: "darkgre-"
       });
 
       // 2. Create the MapView, using an extent that covers both DC and Baltimore
@@ -66,7 +66,7 @@
       });
       view.ui.add(bgExpand, "top-right");
 
-      // 4. Locate widget 
+      // 4. Locate widget (zooms to user location)
       const locateWidget = new Locate({
         view,
         useHeadingEnabled: false,
@@ -140,7 +140,7 @@
       });
       graphicsLayer.add(whGraphic);
 
-      // 6f. Add a polyline roughly between DC and Baltimore
+      // 6f. Add a 30-mile polyline roughly between DC and Baltimore
       const lineCenterLon = -76.8244;
       const lineLat = 39.0942;
       const lineHalfDeltaLon = 0.28;
@@ -162,7 +162,7 @@
       });
       graphicsLayer.add(lineGraphic);
 
-      // 6g. Add the Baltimore polygon
+      // 6g. Add the Baltimore 10×10 mile polygon
       const baltimorePolygon = {
         type: "polygon",
         rings: [
@@ -187,6 +187,31 @@
       });
       graphicsLayer.add(baltimoreGraphic);
 
+      // 6h. Add the Washington, D.C. polygon (unchanged)
+      const dcPolygon = {
+        type: "polygon",
+        rings: [
+          [-77.1198, 38.9955],  // NW corner of DC
+          [-76.9094, 38.9955],  // NE corner of DC
+          [-76.9094, 38.7916],  // SE corner of DC
+          [-77.1198, 38.7916],  // SW corner of DC
+          [-77.1198, 38.9955]   // back to NW
+        ]
+      };
+      const dcFill = {
+        type: "simple-fill",
+        color: [0, 128, 0, 0.2],  // semi-transparent green
+        outline: {
+          color: [0, 128, 0],     // solid green outline
+          width: 2
+        }
+      };
+      const dcGraphic = new Graphic({
+        geometry: dcPolygon,
+        symbol: dcFill
+      });
+      graphicsLayer.add(dcGraphic);
+
       // 7. Add the military bases FeatureLayer with popups
       const milBaseLayer = new FeatureLayer({
         url: "https://services.arcgis.com/hRUr1F8lE8Jq2uJo/arcgis/rest/services/milbases/FeatureServer",
@@ -197,8 +222,8 @@
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: [0, 0, 102, 1], 
-            size: 15,
+            color: [0, 0, 255, 0.7],  // semi-transparent blue
+            size: 8,
             outline: {
               color: "white",
               width: 1
@@ -214,22 +239,18 @@
         }
       });
       map.add(milBaseLayer);
-      
-      // 8. Add the US Airports layer
+
+      // 8. Add the US Airports layer with custom icon
       const airportsLayer = new FeatureLayer({
         url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Kimmel_2025/FeatureServer",
         outFields: ["AIRPORT_NAME", "IATA_CODE", "STATE"],
         renderer: {
           type: "simple",
           symbol: {
-            type: "simple-marker",
-            style: "triangle",
-            color: [255, 165, 0], // orange
-            size: 8,
-            outline: {
-              color: [255, 255, 255],
-              width: 1
-            }
+            type: "picture-marker",
+            url: "https://raw.githubusercontent.com/DavidKimmel/agol/main/airport.png",
+            width: "24px",
+            height: "24px"
           }
         },
         popupTemplate: {
@@ -241,6 +262,7 @@
         }
       });
       map.add(airportsLayer);
+
     });
   </script>
 
