@@ -93,16 +93,12 @@
         latitude: 38.897957
       };
 
-      // 6b. Define a yellow square symbol for the White House
-      const squareSymbol = {
-        type: "simple-marker",
-        style: "square",
-        color: [255, 255, 0],  // yellow fill
-        size: 12,
-        outline: {
-          color: [0, 0, 0],    // black outline
-          width: 2
-        }
+      // 6b. Define a picture‐marker symbol using your wh.png
+      const whSymbol = {
+        type: "picture-marker",  
+        url: "https://raw.githubusercontent.com/DavidKimmel/agolrest/main/wh.png",
+        width: "34px",    
+        height: "34px"
       };
 
       // 6c. Attributes for White House graphic
@@ -131,7 +127,7 @@
       // 6e. Create the White House Graphic
       const whGraphic = new Graphic({
         geometry: whPoint,
-        symbol: squareSymbol,
+        symbol: whSymbol,
         attributes: whAttributes,
         popupTemplate: whPopupTemplate
       });
@@ -234,8 +230,6 @@
       url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Kimmel_Airports/FeatureServer",
       outFields: ["AirportCode"],
       });
-
-      //adding the feature layer to the map
       map.add(myAirports);
 
 
@@ -243,16 +237,17 @@
       const pointInfos = {
       layer: myAirports
       }
-
       // Begin Editor constructor
       const editor = new Editor({
       view: view,
       layerInfos: [pointInfos]
       }); // End Editor constructor
-
+      
       // Add the widget to the view
       view.ui.add(editor, "top-right");
     });
+
+
   </script>
 
   <!-- css to make a full screen map -->
