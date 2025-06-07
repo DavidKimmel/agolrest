@@ -39,20 +39,15 @@
 
       // 1. Create the Map
       const map = new Map({
-        basemap: "dark-gray"
+        basemap: "gray-vector"
       });
-
-      // 2. Create the MapView, using an extent that covers both DC and Baltimore
+      
+      // 2. Center map on DC
       const view = new MapView({
+        container: "viewDiv",
         map: map,
-        extent: {
-          xmin: -77.1198,
-          ymin:  38.7916,
-          xmax: -76.5189,
-          ymax:  39.3629,
-          spatialReference: { wkid: 4326 }
-        },
-        container: "viewDiv"
+        center: [-77.0365, 38.8951],  
+        zoom: 12                       
       });
 
       // 3. BasemapGallery widget (in an Expand)
@@ -140,53 +135,6 @@
       });
       graphicsLayer.add(whGraphic);
 
-      // 6f. Add a 30-mile polyline roughly between DC and Baltimore
-      const lineCenterLon = -76.8244;
-      const lineLat = 39.0942;
-      const lineHalfDeltaLon = 0.28;
-      const polyline = {
-        type: "polyline",
-        paths: [
-          [lineCenterLon - lineHalfDeltaLon, lineLat],
-          [lineCenterLon + lineHalfDeltaLon, lineLat]
-        ]
-      };
-      const lineSymbol = {
-        type: "simple-line",
-        color: [255, 0, 0],   // red line
-        width: 3
-      };
-      const lineGraphic = new Graphic({
-        geometry: polyline,
-        symbol: lineSymbol
-      });
-      graphicsLayer.add(lineGraphic);
-
-      // 6g. Add the Baltimore polygon
-      const baltimorePolygon = {
-        type: "polygon",
-        rings: [
-          [-76.7055, 39.3629],  // top-left
-          [-76.5189, 39.3629],  // top-right
-          [-76.5189, 39.2179],  // bottom-right
-          [-76.7055, 39.2179],  // bottom-left
-          [-76.7055, 39.3629]   // back to top-left
-        ]
-      };
-      const baltimoreFill = {
-        type: "simple-fill",
-        color: [0, 128, 0, 0.2],  // semi-transparent green
-        outline: {
-          color: [0, 128, 0],    // solid green outline
-          width: 2
-        }
-      };
-      const baltimoreGraphic = new Graphic({
-        geometry: baltimorePolygon,
-        symbol: baltimoreFill
-      });
-      graphicsLayer.add(baltimoreGraphic);
-
       // 7. Add the military bases FeatureLayer with popups
       const milBaseLayer = new FeatureLayer({
         url: "https://services.arcgis.com/hRUr1F8lE8Jq2uJo/arcgis/rest/services/milbases/FeatureServer",
@@ -195,14 +143,11 @@
         renderer: {
           type: "simple",
           symbol: {
-            type: "simple-marker",
-            style: "circle",
-            color: [0, 0, 255, 1],  // opaque blue
-            size: 8,
-            outline: {
-              color: "white",
-              width: 1
-            }
+            type: "picture-marker",            
+            url: "military_base_icon.png",     
+            width: "24px",                      
+            height: "24px",
+
           }
         },
         popupTemplate: {
@@ -213,7 +158,10 @@
           `
         }
       });
+
       map.add(milBaseLayer);
+
+
 
       // 8. Add the US Airports layer with both Airport and Heliport symbols
       const airportRenderer = {
