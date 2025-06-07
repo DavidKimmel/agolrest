@@ -225,25 +225,34 @@
       });
       map.add(airportsLayer);
 
-      // 9. adding the const for the feature layer
+      // 9. visited airports layer
+      const visitedAirportSymbol = {
+        type: "picture-marker",
+        url: "https://raw.githubusercontent.com/DavidKimmel/agolrest/main/visited.png",
+        width: "34px",
+        height: "34px"
+      };
+
       const myAirports = new FeatureLayer({
-      url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Kimmel_Airports/FeatureServer",
-      outFields: ["AirportCode"],
+        url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Kimmel_Airports/FeatureServer",
+        outFields: ["AirportCode"],
+        renderer: {
+          type: "simple",             
+          symbol: visitedAirportSymbol
+        },
+        popupTemplate: {
+          title: "Visited Airport: {AirportCode}",
+          content: "You've marked this airport as visited."
+        }
       });
       map.add(myAirports);
 
-
-      // 10. Set the point layer's LayerInfo
-      const pointInfos = {
-      layer: myAirports
-      }
-      // Begin Editor constructor
+      // 10. Editor widget 
+      const pointInfos = { layer: myAirports };
       const editor = new Editor({
-      view: view,
-      layerInfos: [pointInfos]
-      }); // End Editor constructor
-
-      // Add the widget to the view
+        view: view,
+        layerInfos: [pointInfos]
+      });
       view.ui.add(editor, "top-right");
     });
 
