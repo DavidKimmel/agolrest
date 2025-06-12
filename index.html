@@ -22,7 +22,8 @@
       "esri/Graphic",
       "esri/layers/GraphicsLayer",
       "esri/layers/FeatureLayer",
-      "esri/widgets/Editor"
+      "esri/widgets/Editor",
+      "esri/widgets/Legend"            // ← import Legend
     ], function(
       esriConfig,
       Map,
@@ -34,7 +35,8 @@
       Graphic,
       GraphicsLayer,
       FeatureLayer,
-      Editor
+      Editor,
+      Legend                          // ← Legend class
     ) {
 
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEwEJiPsJAv6XK5APCcuFpZEmTCdTdSU9XMQXYBgfL9c5UnZrY4R2UdHgVrW8LfqDFKnjefPQr9XO0pMlE2S9osFC4vlxQEcDC2L-rbRhvnh3cGFmfknrnTY3XSIHKqUu1aHDnbMm61c0aME06Eg9u_NwfzhPyWlPsZlxkyOWLAtootixnskdcZY0pddnIjDLJ19HPMO7YoJRFfo-wFMnrXD59hI_LVwr_BLfWo0dbk7AT1_nGwi5c7J";
@@ -52,7 +54,7 @@
         zoom: 11                       
       });
 
-      // 3. BasemapGallery widget (in an Expand)
+      // 3. BasemapGallery widget
       const basemapGallery = new BasemapGallery({ view });
       const bgExpand = new Expand({
         view,
@@ -63,7 +65,7 @@
       });
       view.ui.add(bgExpand, "top-right");
 
-      // 4. Locate widget (zooms to user location)
+      // 4. Locate widget
       const locateWidget = new Locate({
         view,
         useHeadingEnabled: false,
@@ -82,98 +84,75 @@
       });
       view.ui.add(searchWidget, "top-right");
 
-      // 6. GraphicsLayer for custom graphics (White House, polyline, polygons)
+      // 6. GraphicsLayer for White House
       const graphicsLayer = new GraphicsLayer();
       map.add(graphicsLayer);
 
-      // 6a. Geometry for White House point
-      const whPoint = {
-        type: "point",
-        longitude: -77.036560,
-        latitude: 38.897957
-      };
-
-      // 6b. Define a picture‐marker symbol using your wh.png
+      // 6a. White House point, symbol, attributes, popup
+      const whPoint = { type: "point", longitude: -77.036560, latitude: 38.897957 };
       const whSymbol = {
-        type: "picture-marker",  
+        type: "picture-marker",
         url: "https://raw.githubusercontent.com/DavidKimmel/agolrest/main/wh.png",
-        width: "34px",    
+        width: "34px",
         height: "34px"
       };
-
-      // 6c. Attributes for White House graphic
-      const whAttributes = {
-        Name: "The White House",
-        Description: "The White House is both the home of the President of the United States and his family, and a living museum of American history.",
-        URL: "https://www.whitehouse.gov/"
-      };
-
-      // 6d. Popup template for White House
-      const whPopupTemplate = {
-        title: "{Name}",
-        content: `
-          <p>{Description}</p>
-          <p>
-            <a href="{URL}" target="_blank">
-              Visit the official White House website
-            </a>
-          </p>
-          <img src="http://127.0.0.1:5500/whitehouse.jpg"
-               alt="White House"
-               style="width:200px; margin-top:8px;" />
-        `
-      };
-
-      // 6e. Create the White House Graphic
       const whGraphic = new Graphic({
         geometry: whPoint,
         symbol: whSymbol,
-        attributes: whAttributes,
-        popupTemplate: whPopupTemplate
+        attributes: {
+          Name: "The White House",
+          Description: "The White House is both the home of the President …",
+          URL: "https://www.whitehouse.gov/"
+        },
+        popupTemplate: {
+          title: "{Name}",
+          content: `
+            <p>{Description}</p>
+            <p><a href="{URL}" target="_blank">
+              Visit the official White House website
+            </a></p>
+            <img src="http://127.0.0.1:5500/whitehouse.jpg"
+                 alt="White House"
+                 style="width:200px; margin-top:8px;" />
+          `
+        }
       });
       graphicsLayer.add(whGraphic);
 
-      // 7. Add the military bases FeatureLayer with popups
+      // 7. Military bases
       const milBaseLayer = new FeatureLayer({
         url: "https://services.arcgis.com/hRUr1F8lE8Jq2uJo/arcgis/rest/services/milbases/FeatureServer",
         layerId: 0,
-        outFields: ["COMPONENT", "SITE_NAME", "STATE_TERR"],
+        outFields: ["COMPONENT","SITE_NAME","STATE_TERR"],
         renderer: {
           type: "simple",
           symbol: {
-            type: "picture-marker",            
-            url: "military_base_icon.png",     
-            width: "24px",                      
-            height: "24px",
-
+            type: "picture-marker",
+            url: "military_base_icon.png",
+            width: "24px",
+            height: "24px"
           }
         },
         popupTemplate: {
           title: "{SITE_NAME}",
           content: `
-            <strong>Component:</strong> {COMPONENT} <br>
+            <strong>Component:</strong> {COMPONENT}<br>
             <strong>State/Territory:</strong> {STATE_TERR}
           `
         }
       });
-
       map.add(milBaseLayer);
 
-
-
-      // 8. Add the US Airports layer with both Airport and Heliport symbols
+      // 8. US Airports & Heliports
       const airportRenderer = {
-        type: "unique-value",  
+        type: "unique-value",
         field: "Fac_Type",
         defaultSymbol: {
           type: "simple-marker",
           style: "circle",
-          color: [200, 200, 200, 0.5],
+          color: [200,200,200,0.5],
           size: 6,
-          outline: {
-            color: "#888",
-            width: 0.5
-          }
+          outline: { color: "#888", width: 0.5 }
         },
         uniqueValueInfos: [
           {
@@ -196,50 +175,52 @@
           }
         ]
       };
-
       const airportLabels = {
         symbol: {
           type: "text",
           color: "#FFFFFF",
           haloColor: "#5E8D74",
           haloSize: "2px",
-          font: {
-            size: "12px",
-            family: "Noto Sans",
-            style: "italic",
-            weight: "normal"
-          }
+          font: { size:"12px", family:"Noto Sans", style:"italic", weight:"normal" }
         },
         labelPlacement: "above-center",
-        labelExpressionInfo: {
-          expression: "$feature.Fac_Name"
-        }
+        labelExpressionInfo: { expression: "$feature.Fac_Name" }
       };
-
       const airportsLayer = new FeatureLayer({
         url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports_Kimmel_2025/FeatureServer",
-        outFields: ["Fac_Name", "Fac_Type", "IATA_CODE", "STATE"],
+        outFields: ["Fac_Name","Fac_Type","IATA_CODE","STATE"],
         renderer: airportRenderer,
         labelingInfo: [airportLabels],
         definitionExpression: "Fac_Type = 'AIRPORT' OR Fac_Type = 'HELIPORT'"
       });
       map.add(airportsLayer);
 
-      // 9. visited airports layer
+      // 9. Visited airports layer with labels
       const visitedAirportSymbol = {
         type: "picture-marker",
         url: "https://raw.githubusercontent.com/DavidKimmel/agolrest/main/visited.png",
         width: "44px",
         height: "44px"
       };
-
+      const visitedLabels = {
+        symbol: {
+          type: "text",
+          color: "#000000",
+          haloColor: "#FFFFFF",
+          haloSize: "1px",
+          font: { size:"12px", family:"Noto Sans", weight:"bold" }
+        },
+        labelPlacement: "above-center",
+        labelExpressionInfo: { expression: "$feature.AirportCode" }
+      };
       const myAirports = new FeatureLayer({
         url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Kimmel_Airports/FeatureServer",
         outFields: ["AirportCode"],
         renderer: {
-          type: "simple",             
+          type: "simple",
           symbol: visitedAirportSymbol
         },
+        labelingInfo: [visitedLabels],        // ← add labelingInfo
         popupTemplate: {
           title: "Visited Airport: {AirportCode}",
           content: "You've marked this airport as visited."
@@ -248,22 +229,29 @@
       map.add(myAirports);
 
       // 10. Editor widget 
-      const pointInfos = { layer: myAirports };
       const editor = new Editor({
         view: view,
-        layerInfos: [pointInfos]
+        layerInfos: [{ layer: myAirports }]
       });
       view.ui.add(editor, "top-right");
+
+      // 11. Legend widget
+      const legend = new Legend({
+        view: view,
+        layerInfos: [
+          { layer: milBaseLayer,  title: "Military Bases" },
+          { layer: airportsLayer, title: "Airports & Heliports" },
+          { layer: myAirports,    title: "Visited Airports" }
+        ]
+      });
+      view.ui.add(legend, "bottom-left");
+
     });
-
-
   </script>
 
   <!-- css to make a full screen map -->
   <style>
-    html,
-    body,
-    #viewDiv {
+    html, body, #viewDiv {
       padding: 0;
       margin: 0;
       height: 100%;
